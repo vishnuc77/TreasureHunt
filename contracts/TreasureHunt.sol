@@ -25,12 +25,13 @@ contract TreasureHunt is VRFConsumerBaseV2Plus {
         Right
     }
     
-    mapping(uint8 => bool) primes;
+    mapping(uint8 => bool) public primes;
     mapping(address => bool) public participants;
-    mapping(address => uint8) playerPosition;
-    uint8 treasurePosition;
-    bool isRandomGenerationInProgress;
+    mapping(address => uint8) public playerPosition;
+    uint8 public treasurePosition;
+    bool public isRandomGenerationInProgress;
     bool isRandom;
+    uint public requestId;
 
     uint public constant ENTRY_FEE = 1000000 gwei;
 
@@ -39,7 +40,7 @@ contract TreasureHunt is VRFConsumerBaseV2Plus {
     event RandomnessReceived(uint256 indexed requestId);
     event PrizeSent(address winner, uint amount);
 
-    constructor(uint subscriptionId, uint8[] memory primeNums) VRFConsumerBaseV2Plus(vrfCoordinator) {
+    constructor(uint subscriptionId, uint8[] memory primeNums, address vrfCoordinator) VRFConsumerBaseV2Plus(vrfCoordinator) {
         s_subscriptionId = subscriptionId;
         treasurePosition = uint8(uint(blockhash(block.number - 1)) % 100);
         isRandomGenerationInProgress = false;
@@ -98,7 +99,7 @@ contract TreasureHunt is VRFConsumerBaseV2Plus {
     /// @notice Internal function to request randomness using Chainlink VRF
     function requestRandomness() internal {
         
-        uint requestId = s_vrfCoordinator.requestRandomWords(
+        requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: s_keyHash,
                 subId: s_subscriptionId,
@@ -134,7 +135,7 @@ contract TreasureHunt is VRFConsumerBaseV2Plus {
             } else if (adjacentMovement == 1) {
                 treasurePosition = (treasurePosition + 10) % 100;
             // Move left
-            } else if (adjacentMovement == 3) {
+            } else if (adjacentMovement == 2) {
                 // If current position is grid 0, move to grid 99
                 if (treasurePosition == 0) {
                     treasurePosition = 99;
@@ -190,5 +191,26 @@ contract TreasureHunt is VRFConsumerBaseV2Plus {
         (bool sent, bytes memory data) = _winner.call{value: prizeAmount}("");
         require(sent, "Failed to send Ether");
         emit PrizeSent(_winner, prizeAmount);
+    }
+
+    receive() external payable {
+    }
+
+    //////////////////////////
+    // Functions for testing//
+    //////////////////////////
+
+    function moveTreasureToRandom() internal {
+        isRandom = true;
+        requestRandomness();
+        // Signal the system to wait for the treasure position update which happens after VRF callback
+        isRandomGenerationInProgress = true;
+    }
+
+    function moveTreasureToAdjacent() internal {
+        isRandom = false;
+        requestRandomness();
+        // Signal the system to wait for the treasure position update which happens after VRF callback
+        isRandomGenerationInProgress = true;
     }
 }
