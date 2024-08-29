@@ -40,11 +40,12 @@ contract TreasureHunt is VRFConsumerBaseV2Plus {
     event RandomnessReceived(uint256 indexed requestId);
     event PrizeSent(address winner, uint amount);
 
-    constructor(uint subscriptionId, uint8[] memory primeNums, address vrfCoordinator) VRFConsumerBaseV2Plus(vrfCoordinator) {
+    constructor(uint subscriptionId, address vrfCoordinator) VRFConsumerBaseV2Plus(vrfCoordinator) {
         s_subscriptionId = subscriptionId;
         treasurePosition = uint8(uint(blockhash(block.number - 1)) % 100);
         isRandomGenerationInProgress = false;
         // Providing all prime numbers under 100 in an array
+        uint8[25] memory primeNums = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
         for (uint i = 0; i < primeNums.length; i++) {
             primes[primeNums[i]] = true;
         }

@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import "../TreasureHunt.sol";
 
 contract TreasureHuntTest is TreasureHunt {
-    constructor(uint subscriptionId, uint8[] memory primeNums, address vrfCoordinator) TreasureHunt(subscriptionId, primeNums, vrfCoordinator) {
+    constructor(uint subscriptionId, address vrfCoordinator) TreasureHunt(subscriptionId, vrfCoordinator) {
     }
 
     function _findDestination(uint8 _currentPosition, Move _move) internal pure returns (uint8) {

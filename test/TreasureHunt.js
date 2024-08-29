@@ -50,7 +50,7 @@ describe("Lock", function () {
 
       const treasureHunt = await treasureHuntFactory
         .connect(deployer)
-        .deploy(subscriptionId, primes, VRF_addr)
+        .deploy(subscriptionId, VRF_addr)
       await treasureHunt.waitForDeployment();
       const treasureHuntAddress = await treasureHunt.getAddress()
 
